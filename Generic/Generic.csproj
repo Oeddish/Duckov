@@ -4,14 +4,14 @@
     <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
 
-    <SteamWorkshopRoot>C:\Program Files (x86)\Steam\steamapps\workshop\content\3167020</SteamWorkshopRoot>
+    <!-- Mod-specific identifiers -->
     <PublishedFileId>666</PublishedFileId>
-    <DuckovLocalModsRoot>$(UserProfile)\AppData\LocalLow\TeamSoda\Duckov</DuckovLocalModsRoot>
     <LocalModFolderName>Generic</LocalModFolderName>
 
-    <!-- Deployment control -->
-    <DeployWorkshop>false</DeployWorkshop>   <!-- Set true: copy to Workshop mods -->
-    <DeployLocal>true</DeployLocal>          <!-- Set true: copy to local mods --> 
+    <!-- Override defaults if desired -->
+    <!-- <ModAssetRoot>ReleaseExample\Generic</ModAssetRoot> -->
+    <!-- <DeployWorkshop>true</DeployWorkshop> -->
+    <!-- <DeployLocal>true</DeployLocal> -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,20 +27,6 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ModSourceAsset Include="ReleaseExample\Generic\info.ini" />
-    <ModSourceAsset Include="ReleaseExample\Generic\preview.png" Condition="Exists('ReleaseExample\Generic\preview.png')" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="ReleaseExample\Generic\info.ini">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ReleaseExample\Generic\preview.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -51,41 +37,4 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
   </PropertyGroup>
-
-  <Target Name="CopyModArtifacts" AfterTargets="Build">
-    <PropertyGroup>
-      <WorkshopModDir>$(SteamWorkshopRoot)\$(PublishedFileId)</WorkshopModDir>
-      <LocalModDir>$(DuckovLocalModsRoot)\Mods\$(LocalModFolderName)</LocalModDir>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <DeploymentArtifacts Include="$(TargetDir)$(TargetFileName)" />
-      <DeploymentArtifacts Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
-      <DeploymentArtifacts Include="@(ModSourceAsset)" />
-    </ItemGroup>
-
-    <!-- Create folders only if we will copy -->
-    <MakeDir Directories="$(LocalModDir)" Condition="'$(DeployLocal)'=='true' AND !Exists('$(LocalModDir)')" />
-    <MakeDir Directories="$(WorkshopModDir)" Condition="'$(DeployWorkshop)'=='true' AND !Exists('$(WorkshopModDir)')" />
-
-    <!-- Local copy -->
-    <Copy SourceFiles="@(DeploymentArtifacts)"
-          DestinationFolder="$(LocalModDir)"
-          SkipUnchangedFiles="true"
-          Condition="'$(DeployLocal)'=='true'" />
-	<Message Text="Deployed to $(LocalModDir)" Importance="high" Condition="'$(DeployLocal)'=='true'" />
-
-	<!-- Workshop copy -->
-    <Copy SourceFiles="@(DeploymentArtifacts)"
-          DestinationFolder="$(WorkshopModDir)"
-          SkipUnchangedFiles="true"
-          Condition="'$(DeployWorkshop)'=='true'" />
-    <Message Text="Deployed to $(WorkshopModDir)" Importance="high" Condition="'$(DeployWorkshop)'=='true'" />
-
-	<Message Text="Deployment summary: Config=$(Configuration) Local=$(DeployLocal) Workshop=$(DeployWorkshop)" Importance="high" />
-  </Target>
-
-  <Target Name="ValidateAssets" BeforeTargets="Build">
-    <Error Condition="!Exists('ReleaseExample\Generic\info.ini')" Text="Missing info.ini at ReleaseExample\Generic\info.ini" />
-  </Target>
 </Project>
