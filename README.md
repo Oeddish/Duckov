@@ -86,3 +86,20 @@ Ways to toggle:
    - `ModAssetRoot` to change the asset root folder.
    - `LocalModFolderName` to change the local mod folder name.
    - `PublishedFileId` to enable Workshop deployment.
+
+(Full automation for version stamping can be added later.)
+
+## Git Hygiene
+
+- Do not commit `Directory.Build.props.local`.
+- Root `.gitignore` already ignores build output (`bin/`, `obj/`) and local overrides.
+- Tag releases after successful in-game test runs.
+
+## Troubleshooting
+
+| Issue | Resolution |
+|-------|------------|
+| DLL not copied | Ensure `info.ini` exists (mod discovery condition). |
+| Workshop deployment skipped | Set `/p:DeployWorkshop=true` AND define `<PublishedFileId>` in project. |
+| Wrong game path | Override `DuckovPath` in `Directory.Build.props.local`. |
+| Duplicate mod load | Avoid deploying same DLL to both Workshop + Local unless intentional. |
