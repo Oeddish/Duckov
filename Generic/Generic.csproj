@@ -8,6 +8,10 @@
     <PublishedFileId>666</PublishedFileId>
     <DuckovLocalModsRoot>$(UserProfile)\AppData\LocalLow\TeamSoda\Duckov</DuckovLocalModsRoot>
     <LocalModFolderName>Generic</LocalModFolderName>
+
+    <!-- Deployment control -->
+    <DeployWorkshop>false</DeployWorkshop>   <!-- Set true: copy to Workshop mods -->
+    <DeployLocal>true</DeployLocal>          <!-- Set true: copy to local mods -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,14 +64,25 @@
       <DeploymentArtifacts Include="@(ModSourceAsset)" />
     </ItemGroup>
 
-    <MakeDir Directories="$(LocalModDir)" Condition="!Exists('$(LocalModDir)')" />
-    <MakeDir Directories="$(WorkshopModDir)" Condition="'$(Configuration)'=='Release' AND !Exists('$(WorkshopModDir)')" />
+    <!-- Create folders only if we will copy -->
+    <MakeDir Directories="$(LocalModDir)" Condition="'$(DeployLocal)'=='true' AND !Exists('$(LocalModDir)')" />
+    <MakeDir Directories="$(WorkshopModDir)" Condition="'$(DeployWorkshop)'=='true' AND !Exists('$(WorkshopModDir)')" />
 
-    <Copy SourceFiles="@(DeploymentArtifacts)" DestinationFolder="$(LocalModDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(DeploymentArtifacts)" DestinationFolder="$(WorkshopModDir)" SkipUnchangedFiles="true" Condition="'$(Configuration)'=='Release'" />
+    <!-- Local copy -->
+    <Copy SourceFiles="@(DeploymentArtifacts)"
+          DestinationFolder="$(LocalModDir)"
+          SkipUnchangedFiles="true"
+          Condition="'$(DeployLocal)'=='true'" />
+	<Message Text="Deployed to $(LocalModDir)" Importance="high" Condition="'$(DeployLocal)'=='true'" />
 
-    <Message Text="Mod copied (Config=$(Configuration)) Local=$(LocalModDir)" Importance="high"/>
-    <Message Text="Mod copied (Config=$(Configuration)) Workshop=$(WorkshopModDir)" Importance="high" Condition="'$(Configuration)'=='Release'" />
+	<!-- Workshop copy -->
+    <Copy SourceFiles="@(DeploymentArtifacts)"
+          DestinationFolder="$(WorkshopModDir)"
+          SkipUnchangedFiles="true"
+          Condition="'$(DeployWorkshop)'=='true'" />
+    <Message Text="Deployed to $(WorkshopModDir)" Importance="high" Condition="'$(DeployWorkshop)'=='true'" />
+
+	<Message Text="Deployment summary: Config=$(Configuration) Local=$(DeployLocal) Workshop=$(DeployWorkshop)" Importance="high" />
   </Target>
 
   <Target Name="ValidateAssets" BeforeTargets="Build">
