@@ -1,0 +1,9 @@
+* text=auto
+*.cs text
+*.csproj text
+*.props text
+*.targets text
+*.sln text
+*.md text
+*.ini text
+*.json text

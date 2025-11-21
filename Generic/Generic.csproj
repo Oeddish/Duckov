@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsMac>false</IsMac>
+    <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
+    <DuckovPath Condition="'$(IsMac)'">/Users/Somebody/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(IsMac)' != 'true'">C:\Program Files (x86)\Steam\steamapps\common\Escape from Duckov</DuckovPath>
+    <SubPath Condition="'$(IsMac)'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
+    <SubPath Condition="'$(IsMac)' != 'true'">\Duckov_Data\Managed\</SubPath>
+    <SteamWorkshopRoot>C:\Program Files (x86)\Steam\steamapps\workshop\content\3167020</SteamWorkshopRoot>
+    <PublishedFileId>666</PublishedFileId>
+    <DuckovLocalModsRoot>$(UserProfile)\AppData\LocalLow\TeamSoda\Duckov</DuckovLocalModsRoot>
+    <LocalModFolderName>Generic</LocalModFolderName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(DuckovPath)$(SubPath)TeamSoda.*">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DuckovPath)$(SubPath)Unity*">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ItemStatsSystem">
+      <HintPath>$(DuckovPath)$(SubPath)ItemStatsSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Source assets (no need to copy them to bin first) -->
+  <ItemGroup>
+    <ModSourceAsset Include="ReleaseExample\Generic\info.ini" />
+    <ModSourceAsset Include="ReleaseExample\Generic\preview.png" Condition="Exists('ReleaseExample\Generic\preview.png')" />
+  </ItemGroup>
+
+  <!-- (Optional) still copy to output for inspection/debugging -->
+  <ItemGroup>
+    <None Include="ReleaseExample\Generic\info.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ReleaseExample\Generic\preview.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <Target Name="CopyModArtifacts" AfterTargets="Build">
+    <PropertyGroup>
+      <WorkshopModDir>$(SteamWorkshopRoot)\$(PublishedFileId)</WorkshopModDir>
+      <LocalModDir>$(DuckovLocalModsRoot)\Mods\$(LocalModFolderName)</LocalModDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Assembly + symbols from output -->
+      <DeploymentArtifacts Include="$(TargetDir)$(TargetFileName)" />
+      <DeploymentArtifacts Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+      <!-- Assets directly from source -->
+      <DeploymentArtifacts Include="@(ModSourceAsset)" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(LocalModDir)" Condition="!Exists('$(LocalModDir)')" />
+    <MakeDir Directories="$(WorkshopModDir)" Condition="'$(Configuration)'=='Release' AND !Exists('$(WorkshopModDir)')" />
+
+    <Copy SourceFiles="@(DeploymentArtifacts)" DestinationFolder="$(LocalModDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(DeploymentArtifacts)" DestinationFolder="$(WorkshopModDir)" SkipUnchangedFiles="true" Condition="'$(Configuration)'=='Release'" />
+
+    <Message Text="Mod copied (Config=$(Configuration)) Local=$(LocalModDir) Workshop=$(WorkshopModDir)" Importance="high" />
+  </Target>
+
+  <!-- Fail fast if critical asset missing -->
+  <Target Name="ValidateAssets" BeforeTargets="Build">
+    <Error Condition="!Exists('ReleaseExample\Generic\info.ini')" Text="Missing info.ini at ReleaseExample\Generic\info.ini" />
+  </Target>
+</Project>
