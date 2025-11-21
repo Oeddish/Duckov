@@ -44,25 +44,42 @@
     <MakeDir Directories="$(WorkshopModDir)"
              Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'!='' AND !Exists('$(WorkshopModDir)')" />
 
+    <!-- Local copy with output capture -->
     <Copy SourceFiles="@(DeploymentArtifacts)"
           DestinationFolder="$(LocalModDir)"
           SkipUnchangedFiles="true"
-          Condition="'$(DeployLocal)'=='true'" />
+          Condition="'$(DeployLocal)'=='true'">
+      <Output TaskParameter="CopiedFiles" ItemName="LocalCopiedFiles" />
+    </Copy>
+
+    <!-- Log each actually copied local file -->
+    <Message Text="[COPIED][Local] %(LocalCopiedFiles.Identity)"
+             Importance="high"
+             Condition="'@(LocalCopiedFiles)'!=''" />
 
     <Message Text="[DEPLOYED] $(MSBuildProjectName) to $(LocalModDir)"
-          Importance="high"
-          Condition="'$(DeployLocal)'=='true'" />
+             Importance="high"
+             Condition="'$(DeployLocal)'=='true'" />
 
+    <!-- Workshop copy with output capture -->
     <Copy SourceFiles="@(DeploymentArtifacts)"
           DestinationFolder="$(WorkshopModDir)"
           SkipUnchangedFiles="true"
-          Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'!=''" />
+          Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'!=''">
+      <Output TaskParameter="CopiedFiles" ItemName="WorkshopCopiedFiles" />
+    </Copy>
 
+    <!-- Guard: missing PublishedFileId -->
     <Error Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'==''"
            Text="DeployWorkshop=true but PublishedFileId not set in project." />
 
+    <!-- Log each actually copied workshop file -->
+    <Message Text="[COPIED][Workshop] %(WorkshopCopiedFiles.Identity)"
+             Importance="high"
+             Condition="'@(WorkshopCopiedFiles)'!=''" />
+
     <Message Text="[DEPLOYED] $(MSBuildProjectName) to $(WorkshopModDir)"
-          Importance="high"
-          Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'!=''" />
+             Importance="high"
+             Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'!=''" />
   </Target>
 </Project>
