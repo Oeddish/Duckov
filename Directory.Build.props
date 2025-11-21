@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <IsMac>false</IsMac>
+    <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
+
+    <!-- Defaults (can be overridden by Directory.Build.props.local) -->
+    <DuckovPath Condition="'$(IsMac)'">/Users/Somebody/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(IsMac)' != 'true'">C:\Program Files (x86)\Steam\steamapps\common\Escape from Duckov</DuckovPath>
+
+    <SubPath Condition="'$(IsMac)'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
+    <SubPath Condition="'$(IsMac)' != 'true'">\Duckov_Data\Managed\</SubPath>
+  </PropertyGroup>
+
+  <!-- Local override (ignored by Git) -->
+  <Import Project="Directory.Build.props.local" Condition="Exists('Directory.Build.props.local')" />
+</Project>

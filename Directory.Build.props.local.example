@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Example custom install path override -->
+    <DuckovPath>D:\SteamLibrary\steamapps\common\Escape from Duckov</DuckovPath>
+  </PropertyGroup>
+</Project>
