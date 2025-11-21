@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <SteamWorkshopRoot Condition="'$(SteamWorkshopRoot)'==''">C:\Program Files (x86)\Steam\steamapps\workshop\content\3167020</SteamWorkshopRoot>
+    <!-- Deployment switches (retain existing defaults) -->
     <DeployWorkshop Condition="'$(DeployWorkshop)'==''">false</DeployWorkshop>
     <DeployLocal Condition="'$(DeployLocal)'==''">true</DeployLocal>
   </PropertyGroup>
@@ -10,7 +10,7 @@
     <LocalModFolderName Condition="'$(LocalModFolderName)'==''">$(MSBuildProjectName)</LocalModFolderName>
   </PropertyGroup>
 
-  <!-- Discover assets -->
+  <!-- Asset discovery -->
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\$(ModAssetRoot)\info.ini')">
     <ModSourceAsset Include="$(ModAssetRoot)\info.ini" />
     <ModSourceAsset Include="$(ModAssetRoot)\preview.png" Condition="Exists('$(ModAssetRoot)\preview.png')" />
@@ -25,8 +25,8 @@
   <Target Name="CopyModArtifacts" AfterTargets="Build"
           Condition="@(ModSourceAsset) != ''">
     <PropertyGroup>
-      <WorkshopModDir>$(SteamWorkshopRoot)\$(PublishedFileId)</WorkshopModDir>
-      <LocalModDir>$(DuckovLocalModsRoot)\Mods\$(LocalModFolderName)</LocalModDir>
+      <WorkshopModDir>$(SteamWorkshopPath)\$(PublishedFileId)</WorkshopModDir>
+      <LocalModDir>$(LocalModPath)\Mods\$(LocalModFolderName)</LocalModDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,7 +36,9 @@
       <DeploymentArtifacts Include="@(ModSourceAsset)" />
     </ItemGroup>
 
-    <!-- Fixed parentheses -->
+    <Message Text="[DEPLOYMENT SUMMARY] $(MSBuildProjectName): Local=$(DeployLocal) Workshop=$(DeployWorkshop)"
+             Importance="high" />
+
     <MakeDir Directories="$(LocalModDir)"
              Condition="'$(DeployLocal)'=='true' AND !Exists('$(LocalModDir)')" />
     <MakeDir Directories="$(WorkshopModDir)"
@@ -47,6 +49,10 @@
           SkipUnchangedFiles="true"
           Condition="'$(DeployLocal)'=='true'" />
 
+    <Message Text="[DEPLOYED] $(MSBuildProjectName) to $(LocalModDir)"
+          Importance="high"
+          Condition="'$(DeployLocal)'=='true'" />
+
     <Copy SourceFiles="@(DeploymentArtifacts)"
           DestinationFolder="$(WorkshopModDir)"
           SkipUnchangedFiles="true"
@@ -55,7 +61,8 @@
     <Error Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'==''"
            Text="DeployWorkshop=true but PublishedFileId not set in project." />
 
-    <Message Text="[Mod Deploy] $(MSBuildProjectName): Local=$(DeployLocal) Workshop=$(DeployWorkshop)"
-             Importance="high" />
+    <Message Text="[DEPLOYED] $(MSBuildProjectName) to $(WorkshopModDir)"
+          Importance="high"
+          Condition="'$(DeployWorkshop)'=='true' AND '$(PublishedFileId)'!=''" />
   </Target>
 </Project>

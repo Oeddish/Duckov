@@ -1,16 +1,26 @@
 <Project>
   <PropertyGroup>
+    <!-- Platform detection -->
     <IsMac>false</IsMac>
     <IsMac Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">true</IsMac>
 
-    <!-- Defaults (can be overridden by Directory.Build.props.local) -->
+    <!-- Game install path (override in Directory.Build.props.local if different) -->
     <DuckovPath Condition="'$(IsMac)'">/Users/Somebody/Library/Application Support/Steam/steamapps/common/Escape from Duckov</DuckovPath>
-    <DuckovPath Condition="'$(IsMac)' != 'true'">C:\Program Files (x86)\Steam\steamapps\common\Escape from Duckov</DuckovPath>
+    <DuckovPath Condition="'$(IsMac)' != 'true'">$(ProgramFiles(x86))\Steam\steamapps\common\Escape from Duckov</DuckovPath>
 
+    <!-- Managed assemblies subfolder -->
     <SubPath Condition="'$(IsMac)'">/Duckov.app/Contents/Resources/Data/Managed/</SubPath>
     <SubPath Condition="'$(IsMac)' != 'true'">\Duckov_Data\Managed\</SubPath>
+
+    <!-- Steam Workshop base (app id: 3167020) -->
+    <SteamWorkshopPath Condition="'$(SteamWorkshopPath)'=='' AND '$(IsMac)'!='true'">$(ProgramFiles(x86))\Steam\steamapps\workshop\content\3167020</SteamWorkshopPath>
+    <SteamWorkshopPath Condition="'$(SteamWorkshopPath)'=='' AND '$(IsMac)'=='true'">/Users/Somebody/Library/Application Support/Steam/steamapps/workshop/content/3167020</SteamWorkshopPath>
+
+    <!-- Local mod root (UserProfile already set by Windows / dotnet on Mac) -->
+    <LocalModPath Condition="'$(LocalModPath)'=='' AND '$(IsMac)'!='true'">$(UserProfile)\AppData\LocalLow\TeamSoda\Duckov</LocalModPath>
+    <LocalModPath Condition="'$(LocalModPath)'=='' AND '$(IsMac)'=='true'">/Users/Somebody/Library/Application Support/TeamSoda/Duckov</LocalModPath>
   </PropertyGroup>
 
-  <!-- Local override (ignored by Git) -->
+  <!-- Per-machine overrides (ignored by Git) -->
   <Import Project="Directory.Build.props.local" Condition="Exists('Directory.Build.props.local')" />
 </Project>
