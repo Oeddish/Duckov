@@ -11,7 +11,7 @@
 
     <!-- Deployment control -->
     <DeployWorkshop>false</DeployWorkshop>   <!-- Set true: copy to Workshop mods -->
-    <DeployLocal>true</DeployLocal>          <!-- Set true: copy to local mods -->
+    <DeployLocal>true</DeployLocal>          <!-- Set true: copy to local mods --> 
   </PropertyGroup>
 
   <ItemGroup>
